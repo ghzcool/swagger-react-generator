@@ -1,0 +1,95 @@
+/*{{#info}}
+	{{title}} generated
+	{{description}}
+	version: {{version}}
+
+	{{#contact}}Contact name: {{name}}
+	Contact email: {{email}}
+	url: {{& url}}{{/contact}}
+{{/info}}*/
+
+export function Configuration(config) {
+    this.basePath = '';
+    this.fetchMethod = window.fetch;
+    this.headers = {};
+    this.getHeaders = () => { return {} };
+
+    if (config.basePath) {
+        this.basePath = config.basePath;
+    }
+    if (config.fetchMethod) {
+        this.fetchMethod = config.fetchMethod;
+    }
+    if (config.headers) {
+        this.headers = config.headers;
+    }
+    if (config.getHeaders) {
+        this.getHeaders = config.getHeaders;
+    }
+}
+{{#apis}}
+
+export function {{name}}(config) {
+    this.config = config;
+	{{#methods}}
+
+	{{#flatParameters}}
+    this.{{name}} = ({{#parameters}}{{name}}, {{/parameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => {
+	{{/flatParameters}}
+	{{^flatParameters}}
+    this.{{name}} = ({{^noParameters}}args, {{/noParameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => { {{^noParameters}}
+        const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
+	{{/flatParameters}}
+        const {fetchMethod, basePath, headers, getHeaders} = this.config;
+        let url = '{{& url}}';
+		{{#parameters}}
+		{{#inPath}}
+        url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
+		{{/inPath}}
+		{{/parameters}}
+        const params = new URLSearchParams();
+        {{#parameters}}
+        {{#inQuery}}
+        if ({{name}} !== undefined) {
+            {{#isArray}}
+            ({{name}} || []).forEach(item => {
+                params.append('{{name}}', item);
+            });
+            {{/isArray}}
+            {{^isArray}}
+            params.append('{{name}}', {{name}});
+            {{/isArray}}
+        }
+        {{/inQuery}}
+        {{/parameters}}
+        const query = params.toString();
+        return new Promise((resolve, reject) => {
+            const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
+                method: '{{method}}',
+                headers: {...headers, ...getHeaders(), {{#jsonBody}}
+                    'Content-Type': 'application/json-patch+json',
+                {{/jsonBody}}...options.headers}{{^noRequestBody}},
+                body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}
+            });
+            {{#jsonContent}}
+            if (options.returnResponse) {
+                promise.then(response => resolve(response));
+            } else {
+                promise.then(response => {
+                    if (response.status === 200 || response.status === 204) {
+                        return response.json();
+                    } else {
+                        reject(response);
+                    }
+                }).then(data => resolve(data));
+            }
+            {{/jsonContent}}
+            {{^jsonContent}}
+            promise.then(response => resolve(response));
+            {{/jsonContent}}
+            promise.catch(error => reject(error));
+        });
+    };
+	{{/methods}}
+}
+{{/apis}}

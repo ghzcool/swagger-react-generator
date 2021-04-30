@@ -1,0 +1,150 @@
+/*{{#info}}
+	{{title}} generated
+	{{description}}
+	version: {{version}}
+
+	{{#contact}}Contact name: {{name}}
+	Contact email: {{email}}
+	url: {{& url}}{{/contact}}
+{{/info}}*/
+
+export class Configuration {
+	basePath? = '';
+	fetchMethod = window.fetch;
+	headers?: any = {};
+    getHeaders: any = () => { return {} };
+
+	constructor(config: Configuration | any) {
+		if (config.basePath) {
+			this.basePath = config.basePath;
+		}
+		if (config.fetchMethod) {
+			this.fetchMethod = config.fetchMethod;
+		}
+		if (config.headers) {
+			this.headers = config.headers;
+		}
+        if (config.getHeaders) {
+            this.getHeaders = config.getHeaders;
+        }
+	}
+}
+
+{{#models}}
+
+export class {{name}} {
+	{{#properties}}
+	{{name}}{{^nullable}}?{{/nullable}}: {{type}};
+	{{/properties}}
+
+	constructor(obj: {{name}}) {
+		{{#properties}}
+        this.{{name}} = obj.{{name}};
+		{{/properties}}
+	}
+}
+{{/models}}
+
+export class MethodOptions {
+	headers?: any = {};
+	returnResponse?: boolean = false;
+
+	constructor(options: MethodOptions) {
+		if (options.headers) {
+			this.headers = options.headers;
+		}
+		if (options.returnResponse) {
+			this.returnResponse = options.returnResponse;
+		}
+	}
+}
+{{^flatParameters}}
+{{#apis}}
+{{#methods}}
+{{^noParameters}}
+
+export class {{nameCaps}}Args {
+	{{#parameters}}
+	{{name}}{{#nullable}}?{{/nullable}}: {{type}};
+	{{/parameters}}
+
+	constructor(args: {{nameCaps}}Args) {
+		{{#parameters}}
+        this.{{name}} = args.{{name}};
+		{{/parameters}}
+	}
+}
+{{/noParameters}}
+{{/methods}}
+{{/apis}}
+{{/flatParameters}}
+{{#apis}}
+
+export class {{name}} {
+    private readonly config: Configuration;
+
+    constructor(config: Configuration) {
+        this.config = new Configuration(config);
+    }
+	{{#methods}}
+
+	{{#flatParameters}}
+	{{name}}({{#parameters}}{{name}}{{#nullable}}?{{/nullable}}: {{type}}, {{/parameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions = {}): Promise<{{schema}}> {
+	{{/flatParameters}}
+	{{^flatParameters}}
+	{{name}}({{^noParameters}}args: {{nameCaps}}Args, {{/noParameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions | any = {}): Promise<{{schema}}> { {{^noParameters}}
+        const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
+	{{/flatParameters}}
+        const {fetchMethod, basePath, headers, getHeaders} = this.config;
+		let url = '{{& url}}';
+		{{#parameters}}
+		{{#inPath}}
+		url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
+		{{/inPath}}
+		{{/parameters}}
+        const params = new URLSearchParams();
+        {{#parameters}}
+        {{#inQuery}}
+        if ({{name}} !== undefined) {
+            {{#isArray}}
+            ({{name}} || []).forEach(item => {
+                params.append('{{name}}', item as any);
+            });
+            {{/isArray}}
+            {{^isArray}}
+            params.append('{{name}}', {{name}} as any);
+            {{/isArray}}
+        }
+        {{/inQuery}}
+        {{/parameters}}
+		const query = params.toString();
+		return new Promise((resolve, reject) => {
+			const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
+				method: '{{method}}',
+                headers: {...headers, ...getHeaders(), {{#jsonBody}}
+                    'Content-Type': 'application/json-patch+json',
+                {{/jsonBody}}...options.headers}{{^noRequestBody}},
+				body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}
+			});
+            {{#jsonContent}}
+                if (options.returnResponse) {
+                    promise.then(response => resolve(response as any));
+                } else {
+                    promise.then(response => {
+                        if (response.status === 200 || response.status === 204) {
+                            return response.json();
+                        } else {
+                            reject(response);
+                        }
+                    }).then(data => resolve(data));
+                }
+            {{/jsonContent}}
+            {{^jsonContent}}
+            promise.then(response => resolve(response));
+            {{/jsonContent}}
+			promise.catch(error => reject(error));
+		});
+	}
+	{{/methods}}
+}
+{{/apis}}

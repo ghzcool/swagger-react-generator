@@ -1,0 +1,33 @@
+{
+  "name": "swagger-react-generator",
+  "version": "1.0.0",
+  "description": "Generate client API for React based on Swagger JSON",
+  "main": "index.js",
+  "scripts": {
+    "testTSF": "node index.js -I swagger.json -O generated-api.ts -T ts -F",
+    "testTS": "node index.js -I swagger.json -O generated-api.ts -T ts",
+    "testES6F": "node index.js -I swagger.json -O generated-api.js -T es6 -F",
+    "testES6": "node index.js -I swagger.json -O generated-api.js -T es6"
+  },
+  "dependencies": {
+    "mustache": "^4.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ghzcool/swagger-react-generator.git"
+  },
+  "keywords": [
+    "swagger",
+    "react",
+    "client",
+    "api",
+    "generator",
+    "generate"
+  ],
+  "author": "Pavel Pirogov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ghzcool/swagger-react-generator/issues"
+  },
+  "homepage": "https://github.com/ghzcool/swagger-react-generator#readme"
+}
