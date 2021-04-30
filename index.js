@@ -29,7 +29,7 @@ for (let i = 0; i < process.argv.length; i++) {
   }
 }
 
-const templatePath = `./templates/${args.template}.mustache`;
+const templatePath = __dirname + `/templates/${args.template}.mustache`;
 const flatParameters = args.flat;
 
 const data = fs.readFileSync(args.input, { encoding: 'utf8', flag: 'r' });
