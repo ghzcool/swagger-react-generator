@@ -7,7 +7,8 @@ const args = {
   input: './swagger.json',
   output: './generated.js',
   template: 'es6',
-  flat: false
+  flat: false,
+  customTemplate: undefined
 };
 
 for (let i = 0; i < process.argv.length; i++) {
@@ -22,6 +23,9 @@ for (let i = 0; i < process.argv.length; i++) {
     case "-T":
       args.template = process.argv[++i];
       break;
+    case "-C":
+      args.customTemplate = process.argv[++i];
+      break;
     case "-F":
       args.flat = true;
       break;
@@ -29,7 +33,7 @@ for (let i = 0; i < process.argv.length; i++) {
   }
 }
 
-const templatePath = __dirname + `/templates/${args.template}.mustache`;
+const templatePath = args.customTemplate ? args.customTemplate : __dirname + `/templates/${args.template}.mustache`;
 const flatParameters = args.flat;
 
 const data = fs.readFileSync(args.input, { encoding: 'utf8', flag: 'r' });
