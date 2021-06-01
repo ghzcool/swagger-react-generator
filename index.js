@@ -75,7 +75,12 @@ const parseSchemaRef = schemaRef => {
     return 'any';
   }
   const tmp = schemaRef.split('/');
-  return tmp[tmp.length - 1];
+  const name = tmp[tmp.length - 1];
+  const type = types[name];
+  if (type && type.enum) {
+	return type.enum.join(' | ') || 'any';
+  }
+  return name;
 };
 
 const parseSchema = schema => {
@@ -91,6 +96,28 @@ const parseSchema = schema => {
 };
 
 const isSchemaArray = schema => !!schema && schema.type === 'array';
+
+const models = [];
+const types = {...definitions, ...schemas};
+Object.keys(types).forEach(name => {
+  const schema = types[name];
+  if (!schema.enum) {
+    const properties = [];
+    Object.keys(schema.properties || {}).forEach(name => {
+      const propertie = schema.properties[name];
+      properties.push({
+        name,
+        ...propertie,
+        type: parseSchema(propertie)
+      });
+    });
+    models.push({
+      name,
+      ...schema,
+      properties
+    });
+  }
+});
 
 const apisByName = {};
 const apis = [];
@@ -171,26 +198,6 @@ Object.keys(apisByName).forEach(name => {
   apis.push({
     name,
     ...apisByName[name]
-  });
-});
-
-const models = [];
-const types = {...definitions, ...schemas};
-Object.keys(types).forEach(name => {
-  const schema = types[name];
-  const properties = [];
-  Object.keys(schema.properties || {}).forEach(name => {
-    const propertie = schema.properties[name];
-    properties.push({
-      name,
-      ...propertie,
-      type: parseSchema(propertie)
-    });
-  });
-  models.push({
-    name,
-    ...schema,
-    properties
   });
 });
 
