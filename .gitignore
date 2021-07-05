@@ -6,3 +6,6 @@
 
 #log
 npm-debug.log*
+
+#output
+/generated-api.js
