@@ -160,6 +160,9 @@ Object.keys(paths).forEach(url => {
       }
     } else {
       noRequestBody = true;
+      if (!noBodyParameters) {
+        jsonBody = !!(endpoint.consumes || []).find(item => item.indexOf('json') !== -1);
+      }
     }
     const responses = endpoint.responses || {};
     const className = parseClassName(tags);
