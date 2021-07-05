@@ -169,6 +169,8 @@ Object.keys(paths).forEach(url => {
     if (responseSchemas.length) {
       schema = parseSchema(responseSchemas[0].schema);
       jsonContent = !!responseSchemas.find(item => item.name.indexOf('json') !== -1);
+    } else if(endpoint.produces && endpoint.produces.length) {
+      jsonContent = !!endpoint.produces.find(item => item.indexOf('json') !== -1);
     }
     if (!apisByName[className]) {
       apisByName[className] = {
