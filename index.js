@@ -128,6 +128,7 @@ Object.keys(paths).forEach(url => {
     const tags = endpoint.tags || [];
     const parameters = endpoint.parameters || [];
     let noParameters = false;
+    let noBodyParameters = true;
     let noRequestBody = false;
     if (parameters.length) {
       parameters[parameters.length - 1].last = true;
@@ -136,6 +137,10 @@ Object.keys(paths).forEach(url => {
         parameter.isArray = isSchemaArray(parameter.schema ? parameter.schema: parameter);
         parameter.nullable = parameter.schema ? !!parameter.schema.nullable : !parameter.required;
         parameter.inPath = parameter.in === 'path';
+        parameter.inBody = parameter.in === 'body';
+        if (parameter.in === 'body') {
+          noBodyParameters = false;
+        }
         parameter.inQuery = parameter.in === 'query';
       });
     } else {
@@ -187,6 +192,7 @@ Object.keys(paths).forEach(url => {
       isGet,
       parameters,
       noParameters,
+      noBodyParameters,
       noRequestBody,
       jsonBody,
       bodySchema,
