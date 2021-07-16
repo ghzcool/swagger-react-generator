@@ -15,18 +15,20 @@ export class Configuration {
     getHeaders: any = () => { return {} };
 
 	constructor(config: Configuration | any) {
-		if (config.basePath) {
-			this.basePath = config.basePath;
-		}
-		if (config.fetchMethod) {
-			this.fetchMethod = config.fetchMethod;
-		}
-		if (config.headers) {
-			this.headers = config.headers;
-		}
-        if (config.getHeaders) {
-            this.getHeaders = config.getHeaders;
-        }
+	    if (config) {
+	        if (config.basePath) {
+                this.basePath = config.basePath;
+            }
+            if (config.fetchMethod) {
+                this.fetchMethod = config.fetchMethod;
+            }
+            if (config.headers) {
+                this.headers = config.headers;
+            }
+            if (config.getHeaders) {
+                this.getHeaders = config.getHeaders;
+            }
+	    }
 	}
 }
 
@@ -83,7 +85,7 @@ export class {{nameCaps}}Args {
 export class {{name}} {
     private readonly config: Configuration;
 
-    constructor(config: Configuration) {
+    constructor(config: Configuration | any) {
         this.config = new Configuration(config);
     }
 	{{#methods}}

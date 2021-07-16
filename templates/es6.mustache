@@ -14,23 +14,25 @@ export function Configuration(config) {
     this.headers = {};
     this.getHeaders = () => { return {} };
 
-    if (config.basePath) {
-        this.basePath = config.basePath;
-    }
-    if (config.fetchMethod) {
-        this.fetchMethod = config.fetchMethod;
-    }
-    if (config.headers) {
-        this.headers = config.headers;
-    }
-    if (config.getHeaders) {
-        this.getHeaders = config.getHeaders;
+    if (config) {
+        if (config.basePath) {
+            this.basePath = config.basePath;
+        }
+        if (config.fetchMethod) {
+            this.fetchMethod = config.fetchMethod;
+        }
+        if (config.headers) {
+            this.headers = config.headers;
+        }
+        if (config.getHeaders) {
+            this.getHeaders = config.getHeaders;
+        }
     }
 }
 {{#apis}}
 
 export function {{name}}(config) {
-    this.config = config;
+    this.config = config || new Configuration();
 	{{#methods}}
 
 	{{#flatParameters}}
