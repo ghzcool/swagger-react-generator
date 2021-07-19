@@ -1,11 +1,11 @@
 /*{{#info}}
-	{{title}} generated
-	{{description}}
-	version: {{version}}
-
-	{{#contact}}Contact name: {{name}}
-	Contact email: {{email}}
-	url: {{& url}}{{/contact}}
+    {{#title}}{{{title}}}{{/title}} generated
+    {{#description}}{{{description}}}{{/description}}
+    version: {{version}}{{#contact}}
+    {{#name}}
+    Contact name: {{{name}}}{{/name}}{{#email}}
+    Contact email: {{{email}}}{{/email}}{{#url}}
+    Url: {{{url}}}{{/url}}{{/contact}}
 {{/info}}*/
 
 export function Configuration(config) {
