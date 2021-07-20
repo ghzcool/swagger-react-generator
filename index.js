@@ -171,14 +171,17 @@ Object.keys(paths).forEach(url => {
     const content = status200.content || {};
     let schema = 'any';
     let jsonContent = false;
+    let textContent = false;
     const responseSchemas = Object.keys(content).map(responseType => {
       return { name: responseType, ...content[responseType] };
     });
     if (responseSchemas.length) {
       schema = parseSchema(responseSchemas[0].schema);
       jsonContent = !!responseSchemas.find(item => item.name.indexOf('json') !== -1);
+      textContent = !!responseSchemas.find(item => item.name.indexOf('text') !== -1);
     } else if(endpoint.produces && endpoint.produces.length) {
       jsonContent = !!endpoint.produces.find(item => item.indexOf('json') !== -1);
+      textContent = !!endpoint.produces.find(item => item.indexOf('text') !== -1);
     }
     if (!apisByName[className]) {
       apisByName[className] = {
@@ -200,6 +203,7 @@ Object.keys(paths).forEach(url => {
       jsonBody,
       bodySchema,
       jsonContent,
+      textContent,
       schema
     });
   });

@@ -154,13 +154,28 @@ export class {{name}} {
                 }
             {{/jsonContent}}
             {{^jsonContent}}
-             promise.then(response => { 
+            {{#textContent}}
+            if (options.returnResponse) {
+                promise.then(response => resolve(response));
+            } else {
+                promise.then(response => {
+                    if (response.status === 200 || response.status === 204) {
+                        return response.text();
+                    } else {
+                        reject(response);
+                    }
+                }).then(data => resolve(data));
+            }
+            {{/textContent}}
+            {{^textContent}}
+            promise.then(response => {
                 if (response.status === 200 || response.status === 204) {
                     resolve(response);
                 } else {
                     reject(response);
                 }
             });
+            {{/textContent}}
             {{/jsonContent}}
 			promise.catch(error => reject(error));
 		});
