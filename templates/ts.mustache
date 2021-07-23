@@ -1,4 +1,4 @@
-/* tslint:disable */
+// @ts-nocheck
 /*{{#info}}
     {{#title}}{{{title}}}{{/title}} generated
     {{#description}}{{{description}}}{{/description}}
@@ -122,24 +122,18 @@ export class {{name}} {
         {{/parameters}}
 		const query = params.toString();
 		return new Promise((resolve, reject) => {
-            {{^noBodyParameters}}
-            {{#flatParameters}}
-            const bodyParams = {
-            {{#parameters}}
-            {{#inBody}}
-                '{{name}}': {{name}},
-            {{/inBody}}
-            {{/parameters}}
-            };
-            {{/flatParameters}}
-            {{/noBodyParameters}}
+            {{#formBody}}
+            const formData = new FormData();
+            {{#parameters}}{{#inForm}}
+            formData.append('{{name}}', {{name}});
+            {{/inForm}}{{/parameters}}
+            {{/formBody}}
 			const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
 				method: '{{method}}',
-                headers: {...headers, ...getHeaders(), {{#jsonBody}}
-                    'Content-Type': 'application/json-patch+json',
-                {{/jsonBody}}...options.headers}{{^noRequestBody}},
-				body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{^noBodyParameters}},
-                body: JSON.stringify({{#flatParameters}}bodyParams{{/flatParameters}}{{^flatParameters}}args{{/flatParameters}}){{/noBodyParameters}}
+                headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}'Content-Type': {{#multipart}}'multipart/form-data'{{/multipart}}{{^multipart}}'application/x-www-form-urlencoded'{{/multipart}}, {{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
+                body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
+                body: formData{{/formBody}}{{^noBodyParameters}}{{#bodyVariable}},
+                body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}
 			});
             {{#jsonContent}}
                 if (options.returnResponse) {

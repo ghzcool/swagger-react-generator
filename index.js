@@ -130,6 +130,7 @@ Object.keys(paths).forEach(url => {
     let noParameters = false;
     let noBodyParameters = true;
     let noRequestBody = false;
+    let bodyVariable = null;
     if (parameters.length) {
       parameters[parameters.length - 1].last = true;
       parameters.forEach(parameter => {
@@ -139,9 +140,11 @@ Object.keys(paths).forEach(url => {
         parameter.inPath = parameter.in === 'path';
         parameter.inBody = parameter.in === 'body';
         if (parameter.in === 'body') {
+          bodyVariable = parameter.name;
           noBodyParameters = false;
         }
         parameter.inQuery = parameter.in === 'query';
+        parameter.inForm = parameter.in === 'formData';
       });
     } else {
       noParameters = true;
@@ -149,6 +152,8 @@ Object.keys(paths).forEach(url => {
     const requestBody = endpoint.requestBody;
     let bodySchema = 'any';
     let jsonBody = false;
+    let formBody = false;
+    let multipart = false;
     if (requestBody) {
       const bodyContent = requestBody.content || {};
       const bodySchemas = Object.keys(bodyContent).map(requestType => {
@@ -157,12 +162,16 @@ Object.keys(paths).forEach(url => {
       if (bodySchemas.length) {
         bodySchema = parseSchema(bodySchemas[0].schema);
         jsonBody = !!bodySchemas.find(item => item.name.indexOf('json') !== -1);
+        formBody = !!bodySchemas.find(item => item.name.indexOf('form') !== -1);
+        multipart = !!bodySchemas.find(item => item.name.indexOf('multipart') !== -1);
       }
     } else {
       noRequestBody = true;
       if (!noBodyParameters) {
         jsonBody = !!(endpoint.consumes || []).find(item => item.indexOf('json') !== -1);
       }
+      formBody = !!(endpoint.consumes || []).find(item => item.indexOf('form') !== -1);
+      multipart = !!(endpoint.consumes || []).find(item => item.indexOf('multipart') !== -1);
     }
     const responses = endpoint.responses || {};
     const className = parseClassName(tags);
@@ -200,7 +209,10 @@ Object.keys(paths).forEach(url => {
       noParameters,
       noBodyParameters,
       noRequestBody,
+      bodyVariable,
       jsonBody,
+      formBody,
+      multipart,
       bodySchema,
       jsonContent,
       textContent,
