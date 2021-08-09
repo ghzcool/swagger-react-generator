@@ -68,7 +68,7 @@ const parseMethodName = (url, method) => {
   }).join('') + capitalize(method);
 };
 
-const parseClassName = tags => tags.map(tag => capitalize(tag)).join('') + 'Api';
+const parseClassName = tags => tags.map(tag => tag.split(' ').map(part => capitalize(part)).join('')).join('') + 'Api';
 
 const parseSchemaRef = schemaRef => {
   if (!schemaRef) {
