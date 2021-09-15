@@ -63,12 +63,13 @@ const capitalize = str => {
 const parseMethodName = (url, method) => {
   return url.split('/').map((part, index) => {
     const tmp = part.split('{').join('').split('}').join('').split('.').join('')
-      .split('_').map((part, index2) => index > 1 || index2 > 1 ? capitalize(part) : part).join('');
+      .split('_').map((part, index2) => index > 1 || index2 > 1 ? capitalize(part) : part).join('')
+      .split('-').map((part, index2) => index > 1 || index2 > 1 ? capitalize(part) : part).join('');
     return index > 1 ? capitalize(tmp) : tmp;
   }).join('') + capitalize(method);
 };
 
-const parseClassName = tags => tags.map(tag => tag.split(' ').map(part => capitalize(part)).join('')).join('') + 'Api';
+const parseClassName = tags => tags.map(tag => tag.split(' ').map(part => capitalize(part)).join('').split('-').map(part => capitalize(part)).join('')).join('') + 'Api';
 
 const parseSchemaRef = schemaRef => {
   if (!schemaRef) {
