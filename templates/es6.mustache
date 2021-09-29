@@ -88,8 +88,8 @@ export function {{name}}(config) {
                 method: '{{method}}',
                 headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}'Content-Type': {{#multipart}}'multipart/form-data'{{/multipart}}{{^multipart}}'application/x-www-form-urlencoded'{{/multipart}}, {{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
                 body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
-                body: formData{{/formBody}}{{^noBodyParameters}}{{#bodyVariable}},
-                body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}
+                body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
+                body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
             });
             {{#jsonContent}}
             if (options.returnResponse) {
