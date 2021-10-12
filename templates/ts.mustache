@@ -33,6 +33,13 @@ export class Configuration {
 	}
 }
 
+const setAdditionalParams = (params = [], additionalParams = {}) => {
+    Object.keys(additionalParams).forEach(key => {
+        if(additionalParams[key]) {
+            params.append(key, additionalParams[key]);
+        }
+    });
+};
 {{#models}}
 
 export class {{name}} {
@@ -106,6 +113,7 @@ export class {{name}} {
 		{{/inPath}}
 		{{/parameters}}
         const params = new URLSearchParams();
+        setAdditionalParams(params, options.params);
         {{#parameters}}
         {{#inQuery}}
         if ({{name}} !== undefined) {

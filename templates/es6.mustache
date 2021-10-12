@@ -30,6 +30,14 @@ export function Configuration(config) {
         }
     }
 }
+
+const setAdditionalParams = (params = [], additionalParams = {}) => {
+    Object.keys(additionalParams).forEach(key => {
+        if(additionalParams[key]) {
+            params.append(key, additionalParams[key]);
+        }
+    });
+};
 {{#apis}}
 
 export function {{name}}(config) {
@@ -51,6 +59,7 @@ export function {{name}}(config) {
 		{{/inPath}}
 		{{/parameters}}
         const params = new URLSearchParams();
+        setAdditionalParams(params, options.params);
         {{#parameters}}
         {{#inQuery}}
         if ({{name}} !== undefined) {
