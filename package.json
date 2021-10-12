@@ -1,6 +1,6 @@
 {
   "name": "swagger-react-generator",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "Generate client API for React based on Swagger JSON",
   "main": "index.js",
   "scripts": {
