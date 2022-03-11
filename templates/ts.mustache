@@ -14,6 +14,8 @@ export class Configuration {
 	fetchMethod = window.fetch;
 	headers?: any = {};
     getHeaders: any = () => { return {} };
+    responseHandler: any = null;
+    errorHandler: any = null;
 
 	constructor(config: Configuration | any) {
 	    if (config) {
@@ -28,6 +30,12 @@ export class Configuration {
             }
             if (config.getHeaders) {
                 this.getHeaders = config.getHeaders;
+            }
+            if (config.responseHandler) {
+                this.responseHandler = config.responseHandler;
+            }
+            if (config.errorHandler) {
+                this.errorHandler = config.errorHandler;
             }
 	    }
 	}
@@ -105,7 +113,7 @@ export class {{name}} {
 	{{name}}({{^noParameters}}args: {{nameCaps}}Args, {{/noParameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions | any = {}): Promise<{{schema}}> { {{^noParameters}}
         const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
 	{{/flatParameters}}
-        const {fetchMethod, basePath, headers, getHeaders} = this.config;
+        const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
 		let url = '{{& url}}';
 		{{#parameters}}
 		{{#inPath}}
@@ -143,18 +151,20 @@ export class {{name}} {
                 body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
                 body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
 			});
+            !!responseHandler && promise.then(responseHandler);
+            !!errorHandler && promise.catch(errorHandler);
             {{#jsonContent}}
-                if (options.returnResponse) {
-                    promise.then(response => resolve(response as any));
-                } else {
-                    promise.then(response => {
-                        if (response.status === 200 || response.status === 204) {
-                            return response.json();
-                        } else {
-                            reject(response);
-                        }
-                    }).then(data => resolve(data));
-                }
+            if (options.returnResponse) {
+                promise.then(response => resolve(response as any));
+            } else {
+                promise.then(response => {
+                    if (response.status === 200 || response.status === 204) {
+                        return response.json();
+                    } else {
+                        reject(response);
+                    }
+                }).then(data => resolve(data));
+            }
             {{/jsonContent}}
             {{^jsonContent}}
             {{#textContent}}

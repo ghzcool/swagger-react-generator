@@ -14,6 +14,8 @@ export function Configuration(config) {
     this.fetchMethod = window.fetch;
     this.headers = {};
     this.getHeaders = () => { return {} };
+    this.responseHandler = null;
+    this.errorHandler = null;
 
     if (config) {
         if (config.basePath) {
@@ -27,6 +29,12 @@ export function Configuration(config) {
         }
         if (config.getHeaders) {
             this.getHeaders = config.getHeaders;
+        }
+        if (config.responseHandler) {
+            this.responseHandler = config.responseHandler;
+        }
+        if (config.errorHandler) {
+            this.errorHandler = config.errorHandler;
         }
     }
 }
@@ -51,7 +59,7 @@ export function {{name}}(config) {
     this.{{name}} = ({{^noParameters}}args, {{/noParameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => { {{^noParameters}}
         const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
 	{{/flatParameters}}
-        const {fetchMethod, basePath, headers, getHeaders} = this.config;
+        const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
         let url = '{{& url}}';
 		{{#parameters}}
 		{{#inPath}}
@@ -100,6 +108,8 @@ export function {{name}}(config) {
                 body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
                 body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
             });
+            !!responseHandler && promise.then(responseHandler);
+            !!errorHandler && promise.catch(errorHandler);
             {{#jsonContent}}
             if (options.returnResponse) {
                 promise.then(response => resolve(response));
