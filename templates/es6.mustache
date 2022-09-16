@@ -83,7 +83,8 @@ export function {{name}}(config) {
         {{/inQuery}}
         {{/parameters}}
         const query = params.toString();
-        return new Promise((resolve, reject) => {
+        const controller = new AbortController();
+        const promise = new Promise((resolve, reject) => {
             {{^noBodyParameters}}
             {{#flatParameters}}
             const bodyParams = {
@@ -102,6 +103,7 @@ export function {{name}}(config) {
             {{/inForm}}{{/parameters}}
             {{/formBody}}
             const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
+                signal: controller.signal,
                 method: '{{method}}',
                 headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
                 body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
@@ -149,6 +151,8 @@ export function {{name}}(config) {
             {{/jsonContent}}
             promise.catch(error => reject(error));
         });
+        promise.abort = controller.abort;
+        return promise;
     };
 	{{/methods}}
 }
