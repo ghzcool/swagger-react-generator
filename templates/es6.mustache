@@ -110,11 +110,12 @@ export function {{name}}(config) {
                 body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
                 body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
             });
-            !!responseHandler && promise.then(responseHandler);
             !!errorHandler && promise.catch(errorHandler);
+            const catcher = error => error?.name !== "AbortError" && reject(error);
+            !!responseHandler && promise.then(responseHandler, catcher);
             {{#jsonContent}}
             if (options.returnResponse) {
-                promise.then(response => resolve(response));
+                promise.then(response => resolve(response), catcher);
             } else {
                 promise.then(response => {
                     if (response.status === 200 || response.status === 204) {
@@ -122,13 +123,13 @@ export function {{name}}(config) {
                     } else {
                         reject(response);
                     }
-                }).then(data => resolve(data));
+                }, catcher).then(data => resolve(data), catcher);
             }
             {{/jsonContent}}
             {{^jsonContent}}
             {{#textContent}}
             if (options.returnResponse) {
-                promise.then(response => resolve(response));
+                promise.then(response => resolve(response), catcher);
             } else {
                 promise.then(response => {
                     if (response.status === 200 || response.status === 204) {
@@ -136,7 +137,7 @@ export function {{name}}(config) {
                     } else {
                         reject(response);
                     }
-                }).then(data => resolve(data));
+                }, catcher).then(data => resolve(data), catcher);
             }
             {{/textContent}}
             {{^textContent}}
@@ -146,10 +147,9 @@ export function {{name}}(config) {
                 } else {
                     reject(response);
                 }
-            });
+            }, catcher);
             {{/textContent}}
             {{/jsonContent}}
-            promise.catch(error => reject(error));
         });
         promise.abort = () => controller.abort();
         return promise;
