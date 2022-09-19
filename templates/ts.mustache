@@ -194,7 +194,7 @@ export class {{name}} {
             {{/jsonContent}}
 			promise.catch(error => reject(error));
 		});
-        promise.abort = controller.abort;
+        promise.abort = () => controller.abort();
         return promise;
 	}
 	{{/methods}}
