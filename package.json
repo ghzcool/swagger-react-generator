@@ -1,6 +1,6 @@
 {
   "name": "swagger-react-generator",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Generate client API for React based on Swagger JSON",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "testES6": "node index.js -I swagger.json -O generated-api.js -T es6"
   },
   "dependencies": {
-    "mustache": "^4.2.0"
+    "mustache": "4.2.0"
   },
   "repository": {
     "type": "git",

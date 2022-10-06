@@ -118,7 +118,7 @@ export function {{name}}(config) {
                 promise.then(response => resolve(response), catcher);
             } else {
                 promise.then(response => {
-                    if (response.status === 200 || response.status === 204) {
+                    if (response.status === 200 || response.status === 204 || response.status === 304) {
                         return response.json();
                     } else {
                         reject(response);
@@ -132,7 +132,7 @@ export function {{name}}(config) {
                 promise.then(response => resolve(response), catcher);
             } else {
                 promise.then(response => {
-                    if (response.status === 200 || response.status === 204) {
+                    if (response.status === 200 || response.status === 204 || response.status === 304) {
                         return response.text();
                     } else {
                         reject(response);
@@ -142,7 +142,7 @@ export function {{name}}(config) {
             {{/textContent}}
             {{^textContent}}
             promise.then(response => {
-                if (response.status === 200 || response.status === 204) {
+                if (response.status === 200 || response.status === 204 || response.status === 304) {
                     resolve(response);
                 } else {
                     reject(response);
