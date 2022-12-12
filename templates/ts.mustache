@@ -164,7 +164,11 @@ export class {{name}} {
                     if (response.status === 200 || response.status === 204 || response.status === 304) {
                         return response.json();
                     } else {
-                        reject(response);
+                        if(response.bodyUsed && response.json) {
+                            response.json().then(parsedBody => reject({...response, parsedBody}), () => reject(response));
+                        } else {
+                            reject(response);
+                        }
                     }
                 }, catcher).then(data => resolve(data), catcher);
             }
