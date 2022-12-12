@@ -121,7 +121,7 @@ export function {{name}}(config) {
                     if (response.status === 200 || response.status === 204 || response.status === 304) {
                         return response.json();
                     } else {
-                        response.json().then(parsedBody => reject({...response, parsedBody}), () => reject(response));
+                        reject(response);
                     }
                 }, catcher).then(data => resolve(data), catcher);
             }
