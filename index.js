@@ -87,7 +87,9 @@ const parseSchemaRef = schemaRef => {
 };
 
 const parseSchema = schema => {
-    if (schema.type === 'array') {
+    if (!schema) {
+        return 'any';
+    } else if (schema.type === 'array') {
         return parseSchema(schema.items) + '[]';
     } else if (schema.type === 'string') {
         return 'string';
