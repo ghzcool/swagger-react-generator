@@ -1,159 +1,159 @@
 /* eslint-disable */
 /*{{#info}}
-    {{#title}}{{{title}}}{{/title}} generated
-    {{#description}}{{{description}}}{{/description}}
-    version: {{version}}{{#contact}}
-    {{#name}}
-    Contact name: {{{name}}}{{/name}}{{#email}}
-    Contact email: {{{email}}}{{/email}}{{#url}}
-    Url: {{{url}}}{{/url}}{{/contact}}
+  {{#title}}{{{title}}}{{/title}} generated
+  {{#description}}{{{description}}}{{/description}}
+  version: {{version}}{{#contact}}
+  {{#name}}
+  Contact name: {{{name}}}{{/name}}{{#email}}
+  Contact email: {{{email}}}{{/email}}{{#url}}
+  Url: {{{url}}}{{/url}}{{/contact}}
 {{/info}}*/
 
 export function Configuration(config) {
-    this.basePath = '';
-    this.fetchMethod = window.fetch;
-    this.headers = {};
-    this.getHeaders = () => { return {} };
-    this.responseHandler = null;
-    this.errorHandler = null;
+  this.basePath = '';
+  this.fetchMethod = window.fetch;
+  this.headers = {};
+  this.getHeaders = () => { return {} };
+  this.responseHandler = null;
+  this.errorHandler = null;
 
-    if (config) {
-        if (config.basePath) {
-            this.basePath = config.basePath;
-        }
-        if (config.fetchMethod) {
-            this.fetchMethod = config.fetchMethod;
-        }
-        if (config.headers) {
-            this.headers = config.headers;
-        }
-        if (config.getHeaders) {
-            this.getHeaders = config.getHeaders;
-        }
-        if (config.responseHandler) {
-            this.responseHandler = config.responseHandler;
-        }
-        if (config.errorHandler) {
-            this.errorHandler = config.errorHandler;
-        }
+  if (config) {
+    if (config.basePath) {
+      this.basePath = config.basePath;
     }
+    if (config.fetchMethod) {
+      this.fetchMethod = config.fetchMethod;
+    }
+    if (config.headers) {
+      this.headers = config.headers;
+    }
+    if (config.getHeaders) {
+      this.getHeaders = config.getHeaders;
+    }
+    if (config.responseHandler) {
+      this.responseHandler = config.responseHandler;
+    }
+    if (config.errorHandler) {
+      this.errorHandler = config.errorHandler;
+    }
+  }
 }
 
 const setAdditionalParams = (params = [], additionalParams = {}) => {
-    Object.keys(additionalParams).forEach(key => {
-        if(additionalParams[key]) {
-            params.append(key, additionalParams[key]);
-        }
-    });
+  Object.keys(additionalParams).forEach(key => {
+    if(additionalParams[key]) {
+      params.append(key, additionalParams[key]);
+    }
+  });
 };
 {{#apis}}
 
 export function {{name}}(config) {
-    this.config = config || new Configuration();
-	{{#methods}}
+  this.config = config || new Configuration();
+  {{#methods}}
 
-	{{#flatParameters}}
-    this.{{name}} = ({{#parameters}}{{name}}, {{/parameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => {
-	{{/flatParameters}}
-	{{^flatParameters}}
-    this.{{name}} = ({{^noParameters}}args, {{/noParameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => { {{^noParameters}}
-        const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
-	{{/flatParameters}}
-        const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
-        let url = '{{& url}}';
-		{{#parameters}}
-		{{#inPath}}
-        url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
-		{{/inPath}}
-		{{/parameters}}
-        const params = new URLSearchParams();
-        setAdditionalParams(params, options.params);
-        {{#parameters}}
-        {{#inQuery}}
-        if ({{name}} !== undefined) {
-            {{#isArray}}
-            ({{name}} || []).forEach(item => {
-                params.append('{{name}}', item);
-            });
-            {{/isArray}}
-            {{^isArray}}
-            params.append('{{name}}', {{name}});
-            {{/isArray}}
+  {{#flatParameters}}
+  this.{{name}} = ({{#parameters}}{{name}}, {{/parameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => {
+  {{/flatParameters}}
+  {{^flatParameters}}
+  this.{{name}} = ({{^noParameters}}args, {{/noParameters}}{{^noRequestBody}}body, {{/noRequestBody}}options = {}) => { {{^noParameters}}
+    const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
+  {{/flatParameters}}
+    const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
+    {{#noPathParameters}}const{{/noPathParameters}}{{^noPathParameters}}let{{/noPathParameters}} url = '{{& url}}';
+    {{#parameters}}
+    {{#inPath}}
+    url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
+    {{/inPath}}
+    {{/parameters}}
+    const params = new URLSearchParams();
+    setAdditionalParams(params, options.params);
+    {{#parameters}}
+    {{#inQuery}}
+    if ({{name}} !== undefined) {
+      {{#isArray}}
+      ({{name}} || []).forEach(item => {
+        params.append('{{name}}', item);
+      });
+      {{/isArray}}
+      {{^isArray}}
+      params.append('{{name}}', {{name}});
+      {{/isArray}}
+    }
+    {{/inQuery}}
+    {{/parameters}}
+    const query = params.toString();
+    const controller = new AbortController();
+    const promise = new Promise((resolve, reject) => {
+      {{^noBodyParameters}}
+      {{#flatParameters}}
+      const bodyParams = {
+      {{#parameters}}
+      {{#inBody}}
+        '{{name}}': {{name}},
+      {{/inBody}}
+      {{/parameters}}
+      };
+      {{/flatParameters}}
+      {{/noBodyParameters}}
+      {{#formBody}}
+      const formData = new FormData();
+      {{#parameters}}{{#inForm}}
+      formData.append('{{name}}', {{name}});
+      {{/inForm}}{{/parameters}}
+      {{/formBody}}
+      const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
+        signal: controller.signal,
+        method: '{{method}}',
+        headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
+        body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
+        body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
+        body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
+      });
+      !!errorHandler && promise.catch(errorHandler);
+      const catcher = error => error?.name !== "AbortError" && reject(error);
+      !!responseHandler && promise.then(responseHandler, catcher);
+      {{#jsonContent}}
+      if (options.returnResponse) {
+        promise.then(response => resolve(response), catcher);
+      } else {
+        promise.then(response => {
+          if (response.status === 200 || response.status === 204 || response.status === 304) {
+            return response.json();
+          } else {
+            reject(response);
+          }
+        }, catcher).then(data => resolve(data), catcher);
+      }
+      {{/jsonContent}}
+      {{^jsonContent}}
+      {{#textContent}}
+      if (options.returnResponse) {
+        promise.then(response => resolve(response), catcher);
+      } else {
+        promise.then(response => {
+          if (response.status === 200 || response.status === 204 || response.status === 304) {
+            return response.text();
+          } else {
+            reject(response);
+          }
+        }, catcher).then(data => resolve(data), catcher);
+      }
+      {{/textContent}}
+      {{^textContent}}
+      promise.then(response => {
+        if (response.status === 200 || response.status === 204 || response.status === 304) {
+          resolve(response);
+        } else {
+          reject(response);
         }
-        {{/inQuery}}
-        {{/parameters}}
-        const query = params.toString();
-        const controller = new AbortController();
-        const promise = new Promise((resolve, reject) => {
-            {{^noBodyParameters}}
-            {{#flatParameters}}
-            const bodyParams = {
-            {{#parameters}}
-            {{#inBody}}
-                '{{name}}': {{name}},
-            {{/inBody}}
-            {{/parameters}}
-            };
-            {{/flatParameters}}
-            {{/noBodyParameters}}
-            {{#formBody}}
-            const formData = new FormData();
-            {{#parameters}}{{#inForm}}
-            formData.append('{{name}}', {{name}});
-            {{/inForm}}{{/parameters}}
-            {{/formBody}}
-            const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
-                signal: controller.signal,
-                method: '{{method}}',
-                headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
-                body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
-                body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
-                body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
-            });
-            !!errorHandler && promise.catch(errorHandler);
-            const catcher = error => error?.name !== "AbortError" && reject(error);
-            !!responseHandler && promise.then(responseHandler, catcher);
-            {{#jsonContent}}
-            if (options.returnResponse) {
-                promise.then(response => resolve(response), catcher);
-            } else {
-                promise.then(response => {
-                    if (response.status === 200 || response.status === 204 || response.status === 304) {
-                        return response.json();
-                    } else {
-                        reject(response);
-                    }
-                }, catcher).then(data => resolve(data), catcher);
-            }
-            {{/jsonContent}}
-            {{^jsonContent}}
-            {{#textContent}}
-            if (options.returnResponse) {
-                promise.then(response => resolve(response), catcher);
-            } else {
-                promise.then(response => {
-                    if (response.status === 200 || response.status === 204 || response.status === 304) {
-                        return response.text();
-                    } else {
-                        reject(response);
-                    }
-                }, catcher).then(data => resolve(data), catcher);
-            }
-            {{/textContent}}
-            {{^textContent}}
-            promise.then(response => {
-                if (response.status === 200 || response.status === 204 || response.status === 304) {
-                    resolve(response);
-                } else {
-                    reject(response);
-                }
-            }, catcher);
-            {{/textContent}}
-            {{/jsonContent}}
-        });
-        promise.abort = () => controller.abort();
-        return promise;
-    };
-	{{/methods}}
+      }, catcher);
+      {{/textContent}}
+      {{/jsonContent}}
+    });
+    promise.abort = () => controller.abort();
+    return promise;
+  };
+  {{/methods}}
 }
 {{/apis}}

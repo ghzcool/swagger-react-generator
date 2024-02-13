@@ -65,8 +65,8 @@ const capitalize = str => {
 const parseMethodName = (url, method) => {
     return url.split('/').map((part, index) => {
         const tmp = part.split('{').join('').split('}').join('').split('.').join('')
-            .split('_').map((part, index2) => index > 1 || index2 > 1 ? capitalize(part) : part).join('')
-            .split('-').map((part, index2) => index > 1 || index2 > 1 ? capitalize(part) : part).join('');
+            .split('_').map((part, index2) => index > 1 || index2 >= 1 ? capitalize(part) : part).join('')
+            .split('-').map((part, index2) => index > 1 || index2 >= 1 ? capitalize(part) : part).join('');
         return index > 1 ? capitalize(tmp) : tmp;
     }).join('') + capitalize(method);
 };
@@ -81,7 +81,7 @@ const parseSchemaRef = schemaRef => {
     const name = tmp[tmp.length - 1];
     const type = types[name];
     if (type && type.enum) {
-        return type.enum.join(' | ') || 'any';
+        return type.enum.map(item => '"' + item + '"').join(' | ') || 'any';
     }
     return name;
 };
@@ -133,6 +133,7 @@ Object.keys(paths).forEach(url => {
         const tags = endpoint.tags || [];
         const parameters = endpoint.parameters || [];
         let noParameters = false;
+        let noPathParameters = true;
         let noBodyParameters = true;
         let noRequestBody = false;
         let bodyVariable = null;
@@ -143,6 +144,9 @@ Object.keys(paths).forEach(url => {
                 parameter.isArray = isSchemaArray(parameter.schema ? parameter.schema : parameter);
                 parameter.nullable = parameter.schema ? !!parameter.schema.nullable : !parameter.required;
                 parameter.inPath = parameter.in === 'path';
+                if (parameter.inPath) {
+                  noPathParameters = false;
+                }
                 parameter.inBody = parameter.in === 'body';
                 if (parameter.in === 'body') {
                     bodyVariable = parameter.name;
@@ -215,6 +219,7 @@ Object.keys(paths).forEach(url => {
             parameters,
             noParameters,
             noBodyParameters,
+            noPathParameters,
             noRequestBody,
             bodyVariable,
             jsonBody,

@@ -1,80 +1,80 @@
 // @ts-nocheck
 /*{{#info}}
-    {{#title}}{{{title}}}{{/title}} generated
-    {{#description}}{{{description}}}{{/description}}
-    version: {{version}}{{#contact}}
-    {{#name}}
-    Contact name: {{{name}}}{{/name}}{{#email}}
-    Contact email: {{{email}}}{{/email}}{{#url}}
-    Url: {{{url}}}{{/url}}{{/contact}}
+  {{#title}}{{{title}}}{{/title}} generated
+  {{#description}}{{{description}}}{{/description}}
+  version: {{version}}{{#contact}}
+  {{#name}}
+  Contact name: {{{name}}}{{/name}}{{#email}}
+  Contact email: {{{email}}}{{/email}}{{#url}}
+  Url: {{{url}}}{{/url}}{{/contact}}
 {{/info}}*/
 
 export class Configuration {
-	basePath? = '';
-	fetchMethod = window.fetch;
-	headers?: any = {};
-    getHeaders: any = () => { return {} };
-    responseHandler: any = null;
-    errorHandler: any = null;
+  basePath? = '';
+  fetchMethod = window.fetch;
+  headers?: any = {};
+  getHeaders: any = () => { return {} };
+  responseHandler: any = null;
+  errorHandler: any = null;
 
-	constructor(config: Configuration | any) {
-	    if (config) {
-	        if (config.basePath) {
-                this.basePath = config.basePath;
-            }
-            if (config.fetchMethod) {
-                this.fetchMethod = config.fetchMethod;
-            }
-            if (config.headers) {
-                this.headers = config.headers;
-            }
-            if (config.getHeaders) {
-                this.getHeaders = config.getHeaders;
-            }
-            if (config.responseHandler) {
-                this.responseHandler = config.responseHandler;
-            }
-            if (config.errorHandler) {
-                this.errorHandler = config.errorHandler;
-            }
-	    }
-	}
+  constructor(config: Configuration | any) {
+    if (config) {
+      if (config.basePath) {
+        this.basePath = config.basePath;
+      }
+      if (config.fetchMethod) {
+        this.fetchMethod = config.fetchMethod;
+      }
+      if (config.headers) {
+        this.headers = config.headers;
+      }
+      if (config.getHeaders) {
+        this.getHeaders = config.getHeaders;
+      }
+      if (config.responseHandler) {
+        this.responseHandler = config.responseHandler;
+      }
+      if (config.errorHandler) {
+        this.errorHandler = config.errorHandler;
+      }
+    }
+  }
 }
 
 const setAdditionalParams = (params = [], additionalParams = {}) => {
-    Object.keys(additionalParams).forEach(key => {
-        if(additionalParams[key]) {
-            params.append(key, additionalParams[key]);
-        }
-    });
+  Object.keys(additionalParams).forEach(key => {
+    if(additionalParams[key]) {
+      params.append(key, additionalParams[key]);
+    }
+  });
 };
 {{#models}}
 
 export class {{name}} {
-	{{#properties}}
-	{{name}}{{^nullable}}?{{/nullable}}: {{type}};
-	{{/properties}}
+  {{#properties}}
+  {{name}}{{^nullable}}?{{/nullable}}: {{type}};
+  {{/properties}}
 
-	constructor(obj: {{name}}) {
-		{{#properties}}
-        this.{{name}} = obj.{{name}};
-		{{/properties}}
-	}
+  constructor(obj: {{name}}) {
+  {{#properties}}
+    this.{{name}} = obj.{{name}};
+  {{/properties}}
+  }
 }
 {{/models}}
 
 export class MethodOptions {
-	headers?: any = {};
-	returnResponse?: boolean = false;
+  headers?: any = {};
+  returnResponse?: boolean = false;
 
-	constructor(options: MethodOptions) {
-		if (options.headers) {
-			this.headers = options.headers;
-		}
-		if (options.returnResponse) {
-			this.returnResponse = options.returnResponse;
-		}
-	}
+  constructor(options: MethodOptions) {
+    if (options.headers) {
+      this.headers = options.headers;
+    }
+    if (options.returnResponse) {
+      this.returnResponse = options.returnResponse;
+    }
+  }
 }
 {{^flatParameters}}
 {{#apis}}
@@ -82,15 +82,15 @@ export class MethodOptions {
 {{^noParameters}}
 
 export class {{nameCaps}}Args {
-	{{#parameters}}
-	{{name}}{{#nullable}}?{{/nullable}}: {{type}};
-	{{/parameters}}
+  {{#parameters}}
+  {{name}}{{#nullable}}?{{/nullable}}: {{type}};
+  {{/parameters}}
 
-	constructor(args: {{nameCaps}}Args) {
-		{{#parameters}}
-        this.{{name}} = args.{{name}};
-		{{/parameters}}
-	}
+  constructor(args: {{nameCaps}}Args) {
+  {{#parameters}}
+    this.{{name}} = args.{{name}};
+  {{/parameters}}
+  }
 }
 {{/noParameters}}
 {{/methods}}
@@ -99,104 +99,104 @@ export class {{nameCaps}}Args {
 {{#apis}}
 
 export class {{name}} {
-    private readonly config: Configuration;
+  private readonly config: Configuration;
 
-    constructor(config: Configuration | any) {
-        this.config = new Configuration(config);
+  constructor(config: Configuration | any) {
+    this.config = new Configuration(config);
+  }
+  {{#methods}}
+
+  {{#flatParameters}}
+  {{name}}({{#parameters}}{{name}}{{#nullable}}?{{/nullable}}: {{type}}, {{/parameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions = {}): Promise<{{schema}}> {
+  {{/flatParameters}}
+  {{^flatParameters}}
+  {{name}}({{^noParameters}}args: {{nameCaps}}Args, {{/noParameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions | any = {}): Promise<{{schema}}> { {{^noParameters}}
+    const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
+  {{/flatParameters}}
+    const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
+    {{#noPathParameters}}const{{/noPathParameters}}{{^noPathParameters}}let{{/noPathParameters}} url = '{{& url}}';
+  {{#parameters}}
+  {{#inPath}}
+  url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
+  {{/inPath}}
+  {{/parameters}}
+    const params = new URLSearchParams();
+    setAdditionalParams(params, options.params);
+    {{#parameters}}
+    {{#inQuery}}
+    if ({{name}} !== undefined) {
+      {{#isArray}}
+      ({{name}} || []).forEach(item => {
+        params.append('{{name}}', item as any);
+      });
+      {{/isArray}}
+      {{^isArray}}
+      params.append('{{name}}', {{name}} as any);
+      {{/isArray}}
     }
-	{{#methods}}
-
-	{{#flatParameters}}
-	{{name}}({{#parameters}}{{name}}{{#nullable}}?{{/nullable}}: {{type}}, {{/parameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions = {}): Promise<{{schema}}> {
-	{{/flatParameters}}
-	{{^flatParameters}}
-	{{name}}({{^noParameters}}args: {{nameCaps}}Args, {{/noParameters}}{{^noRequestBody}}body?: {{bodySchema}}, {{/noRequestBody}}options: MethodOptions | any = {}): Promise<{{schema}}> { {{^noParameters}}
-        const { {{#parameters}}{{name}}{{^last}}, {{/last}}{{/parameters}} } = args;{{/noParameters}}
-	{{/flatParameters}}
-        const {fetchMethod, basePath, headers, getHeaders, responseHandler, errorHandler} = this.config;
-		let url = '{{& url}}';
-		{{#parameters}}
-		{{#inPath}}
-		url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
-		{{/inPath}}
-		{{/parameters}}
-        const params = new URLSearchParams();
-        setAdditionalParams(params, options.params);
-        {{#parameters}}
-        {{#inQuery}}
-        if ({{name}} !== undefined) {
-            {{#isArray}}
-            ({{name}} || []).forEach(item => {
-                params.append('{{name}}', item as any);
-            });
-            {{/isArray}}
-            {{^isArray}}
-            params.append('{{name}}', {{name}} as any);
-            {{/isArray}}
+    {{/inQuery}}
+    {{/parameters}}
+    const query = params.toString();
+    const controller = new AbortController();
+    const promise = new Promise((resolve, reject) => {
+      {{#formBody}}
+      const formData = new FormData();
+      {{#parameters}}{{#inForm}}
+      formData.append('{{name}}', {{name}});
+      {{/inForm}}{{/parameters}}
+      {{/formBody}}
+      const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
+        signal: controller.signal,
+        method: '{{method}}',
+        headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
+        body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
+        body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
+        body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
+      });
+      !!errorHandler && promise.catch(errorHandler);
+      const catcher = error => error?.name !== "AbortError" && reject(error);
+      !!responseHandler && promise.then(responseHandler, catcher);
+      {{#jsonContent}}
+      if (options.returnResponse) {
+        promise.then(response => resolve(response as any), catcher);
+      } else {
+        promise.then(response => {
+          if (response.status === 200 || response.status === 204 || response.status === 304) {
+            return response.json();
+          } else {
+            reject(response);
+          }
+        }, catcher).then(data => resolve(data), catcher);
+      }
+      {{/jsonContent}}
+      {{^jsonContent}}
+      {{#textContent}}
+      if (options.returnResponse) {
+        promise.then(response => resolve(response), catcher);
+      } else {
+        promise.then(response => {
+          if (response.status === 200 || response.status === 204 || response.status === 304) {
+            return response.text();
+          } else {
+            reject(response);
+          }
+        }, catcher).then(data => resolve(data), catcher);
+      }
+      {{/textContent}}
+      {{^textContent}}
+      promise.then(response => {
+        if (response.status === 200 || response.status === 204 || response.status === 304) {
+          resolve(response);
+        } else {
+          reject(response);
         }
-        {{/inQuery}}
-        {{/parameters}}
-		const query = params.toString();
-        const controller = new AbortController();
-        const promise = new Promise((resolve, reject) => {
-            {{#formBody}}
-            const formData = new FormData();
-            {{#parameters}}{{#inForm}}
-            formData.append('{{name}}', {{name}});
-            {{/inForm}}{{/parameters}}
-            {{/formBody}}
-			const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
-                signal: controller.signal,
-				method: '{{method}}',
-                headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
-                body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
-                body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
-                body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
-			});
-            !!errorHandler && promise.catch(errorHandler);
-            const catcher = error => error?.name !== "AbortError" && reject(error);
-            !!responseHandler && promise.then(responseHandler, catcher);
-            {{#jsonContent}}
-            if (options.returnResponse) {
-                promise.then(response => resolve(response as any), catcher);
-            } else {
-                promise.then(response => {
-                    if (response.status === 200 || response.status === 204 || response.status === 304) {
-                        return response.json();
-                    } else {
-                        reject(response);
-                    }
-                }, catcher).then(data => resolve(data), catcher);
-            }
-            {{/jsonContent}}
-            {{^jsonContent}}
-            {{#textContent}}
-            if (options.returnResponse) {
-                promise.then(response => resolve(response), catcher);
-            } else {
-                promise.then(response => {
-                    if (response.status === 200 || response.status === 204 || response.status === 304) {
-                        return response.text();
-                    } else {
-                        reject(response);
-                    }
-                }, catcher).then(data => resolve(data), catcher);
-            }
-            {{/textContent}}
-            {{^textContent}}
-            promise.then(response => {
-                if (response.status === 200 || response.status === 204 || response.status === 304) {
-                    resolve(response);
-                } else {
-                    reject(response);
-                }
-            }, catcher);
-            {{/textContent}}
-            {{/jsonContent}}
-		});
-        promise.abort = () => controller.abort();
-        return promise;
-	}
-	{{/methods}}
+      }, catcher);
+      {{/textContent}}
+      {{/jsonContent}}
+  });
+    promise.abort = () => controller.abort();
+    return promise;
+  }
+  {{/methods}}
 }
 {{/apis}}
