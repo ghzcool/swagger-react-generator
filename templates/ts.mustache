@@ -48,6 +48,12 @@ const setAdditionalParams = (params = [], additionalParams = {}) => {
     }
   });
 };
+
+{{#enums}}
+  export type {{name}} = {{{value}}};
+
+{{/enums}}
+
 {{#models}}
 
 export class {{name}} {
@@ -57,7 +63,7 @@ export class {{name}} {
 
   constructor(obj: {{name}}) {
   {{#properties}}
-    this.{{name}} = obj.{{name}};
+    this.{{name}} = obj?.{{name}};
   {{/properties}}
   }
 }
