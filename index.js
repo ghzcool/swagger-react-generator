@@ -138,6 +138,7 @@ Object.keys(paths).forEach(url => {
     let noParameters = false;
     let noPathParameters = true;
     let noBodyParameters = true;
+    let noHeaderParameters = true;
     let noRequestBody = false;
     let bodyVariable = null;
     if (parameters.length) {
@@ -154,6 +155,12 @@ Object.keys(paths).forEach(url => {
         if (parameter.in === 'body') {
           bodyVariable = parameter.name;
           noBodyParameters = false;
+        }
+        parameter.inHeader = parameter.in === 'header';
+        if (parameter.in === 'header') {
+          noHeaderParameters = false;
+          parameter.headerName = parameter.name;
+          parameter.name = parseMethodName(parameter.name);
         }
         parameter.inQuery = parameter.in === 'query';
         parameter.inForm = parameter.in === 'formData';
@@ -222,6 +229,7 @@ Object.keys(paths).forEach(url => {
       parameters,
       noParameters,
       noBodyParameters,
+      noHeaderParameters,
       noPathParameters,
       noRequestBody,
       bodyVariable,

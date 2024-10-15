@@ -66,6 +66,14 @@ export function {{name}}(config) {
     url = url.split(['{', '}'].join('{{name}}')).join(encodeURIComponent(String({{name}})));
     {{/inPath}}
     {{/parameters}}
+    {{^noHeaderParameters}}
+    const headerParameters = {};
+    {{#parameters}}
+    {{#inHeader}}
+    headerParameters["{{headerName}}"] = {{name}};
+    {{/inHeader}}
+    {{/parameters}}
+    {{/noHeaderParameters}}
     const params = new URLSearchParams();
     setAdditionalParams(params, options.params);
     {{#parameters}}
@@ -105,7 +113,7 @@ export function {{name}}(config) {
       const promise = fetchMethod(basePath + url + (query ? '?' + query : ''), {
         signal: controller.signal,
         method: '{{method}}',
-        headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers}{{^noRequestBody}},
+        headers: { {{#jsonBody}}'Content-Type': 'application/json', {{/jsonBody}}{{#formBody}}{{^multipart}}'Content-Type': 'application/x-www-form-urlencoded', {{/multipart}}{{/formBody}}...headers, ...getHeaders(), ...options.headers{{^noHeaderParameters}}, ...headerParameters{{/noHeaderParameters}} }{{^noRequestBody}},
         body: 'object' === typeof body ? JSON.stringify(body) : body{{/noRequestBody}}{{#formBody}},
         body: formData{{/formBody}}{{^formBody}}{{^noBodyParameters}}{{#bodyVariable}},
         body: 'object' === typeof {{bodyVariable}} ? JSON.stringify({{bodyVariable}}) : {{bodyVariable}}{{/bodyVariable}}{{/noBodyParameters}}{{/formBody}}
