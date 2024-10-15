@@ -100,18 +100,33 @@ const isSchemaArray = schema => !!schema && schema.type === 'array';
 const models = [];
 const enums = [];
 const types = {...definitions, ...schemas};
-Object.keys(types).forEach(name => {
-  const schema = types[name];
+Object.keys(types).forEach(schemaName => {
+  const schema = types[schemaName];
+  let name = schemaName;
   if (!schema.enum) {
     const properties = [];
     Object.keys(schema.properties || {}).forEach(name => {
       const propertie = schema.properties[name];
       name = name.split('-').join('_');
-      properties.push({
-        name,
-        ...propertie,
-        type: parseSchema(propertie)
-      });
+      if (propertie.enum) {
+        const enumName = parseMethodName(schemaName + '-' + name);
+        enums.push({
+          name: enumName,
+          value: propertie.enum.map(item => '"' + item + '"').join(' | ') || 'any',
+          type: propertie.type
+        });
+        properties.push({
+          name: name,
+          ...propertie,
+          type: enumName
+        });
+      } else {
+        properties.push({
+          name,
+          ...propertie,
+          type: parseSchema(propertie)
+        });
+      }
     });
     models.push({
       name,
